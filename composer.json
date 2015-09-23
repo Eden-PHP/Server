@@ -13,7 +13,7 @@
     ],
     "require": {
         "php": ">=5.4.*",
-		"eden/core": "4.x-dev"
+		"eden/registry": "4.x-dev"
     },
     "autoload": {
          "psr-4": { "Eden\\Server\\": "/src" }
