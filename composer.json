@@ -1,0 +1,21 @@
+{
+    "name": "eden/server",
+    "type": "library",
+    "description": "Express style server",
+    "keywords": ["eden", "library"],
+    "homepage": "http://eden-php.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Christian Blanquera",
+            "email": "cblanquera@openovate.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.*",
+		"eden/core": "4.x-dev"
+    },
+    "autoload": {
+         "psr-4": { "Eden\\Server\\": "/src" }
+    }
+}
