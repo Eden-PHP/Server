@@ -54,12 +54,12 @@ class Index extends Base
 	 * @param callable
 	 * @return this
 	 */
-	public function add($middleware) 
+	public function add($callback) 
 	{
 		//argument 1 should be callable
 		Argument::i()->test(1, 'callable');
 		
-		$this->globalMiddleware[] = $middleware;
+		$this->globalMiddleware[] = $callback;
 		return $this;
 	}
 	
@@ -90,16 +90,16 @@ class Index extends Base
 	{
 		$child = self::i()->setParent($this);
 		
-		foreach($this->globalMiddleware as $middleware) {
-			$child->add($middleware);
+		foreach($this->globalMiddleware as $callback) {
+			$child->add($callback);
 		}
 		
 		foreach($this->routeMiddleware as $method => $route) {
 			$child->route($method, $route[0], $route[1]);
 		}
 		
-		foreach($this->errorMiddleware as $middleware) {
-			$child->error($middleware);
+		foreach($this->errorMiddleware as $callback) {
+			$child->error($callback);
 		}
 		
 		return $child;
@@ -129,11 +129,11 @@ class Index extends Base
 	 * @param callable
 	 * @return this
 	 */
-	public function error($middleware) 
+	public function error($callback) 
 	{
 		//argument 1 should be callable
 		Argument::i()->test(1, 'callable');
-		$this->errorMiddleware[] = $middleware;
+		$this->errorMiddleware[] = $callback;
 		return $this;
 	}
 	
@@ -430,37 +430,27 @@ class Index extends Base
 	 *
 	 * @return array
 	 */
-	protected function getVariables($path, $pattern) 
+	protected function getVariables($matches) 
 	{
 		$variables = array();
-
-		//if the request path equals /
-		if($path == '/') {
-			//there would be no page variables
-			return array();
+		
+		if(!is_array($matches)) {
+			return $variables;
 		}
-
-		//get the arrays
-		$pathArray 		= explode('/', $path);
-		$patternArray 	= explode('/', $pattern);
-
-		//we do not need the first path because
-		// /page/1 is [null,page,1] in an array
-		array_shift($pathArray);
-		array_shift($patternArray);
-
-		//for each request path
-		foreach($pathArray as $i => $value) {
-			//if the page path is not set, is null or is '%'
-			if(!isset($patternArray[$i])
-				|| trim($patternArray[$i]) == NULL
-				|| $patternArray[$i] == '*') {
-				//then we can assume it's a variable
-				$variables[] = $pathArray[$i];
+		
+		array_shift($matches);
+		
+		foreach($matches as $path) {
+			$variables = array_merge($variables, explode('/', $path));
+		}
+		
+		foreach($variables as $i => $variable) {
+			if(!$variable) {
+				unset($variables[$i]);
 			}
 		}
-
-		return $variables;
+		
+		return array_values($variables);
 	}
 	
 	/**
@@ -489,11 +479,11 @@ class Index extends Base
 			array_unshift($args, $request, $response);
 			
 			//parse through middleware
-			foreach($this->errorMiddleware as $middleware) {
+			foreach($this->errorMiddleware as $callback) {
 				//bind callback
-				$middleware = $middleware->bindTo($this, get_class($this));
+				$callback = $callback->bindTo($this, get_class($this));
 			
-				if(call_user_func_array($middleware, $args) === false) {
+				if(call_user_func_array($callback, $args) === false) {
 					break;
 				}
 			}
@@ -528,11 +518,11 @@ class Index extends Base
 	protected function processGlobal($request, $response) 
 	{
 		$args = array($request, $response);
-		foreach($this->globalMiddleware as $middleware) {
+		foreach($this->globalMiddleware as $callback) {
 			//bind callback
-			$middleware = $middleware->bindTo($this, get_class($this));
+			$callback = $callback->bindTo($this, get_class($this));
 			
-			if(call_user_func_array($middleware, $args) === false) {
+			if(call_user_func_array($callback, $args) === false) {
 				return false;
 			}
 		}
@@ -565,13 +555,18 @@ class Index extends Base
 			$pattern = $route[0];
 			$callback = $route[1];
 			
-            $regex = '#^'.str_replace('*', '[^/]*', $pattern).'$#';
-			if($pattern !== '*' && !preg_match($regex, $path)) {
+			$regex = str_replace('**', '!!', $pattern);
+			$regex = str_replace('*', '([^/]*)', $regex);
+			$regex = str_replace('!!', '(.*)', $regex);
+			
+            $regex = '#^'.$regex.'(.*)#';
+			if(!preg_match($regex, $path, $matches)) {
 				continue;
 			}
 			
 			//get dynamic variables
-			$variables = $this->getVariables($path, $pattern);
+			$variables = $this->getVariables($matches);
+			
 			//and stuff it in the request object
 			$request->set('variables', $variables);
 			
