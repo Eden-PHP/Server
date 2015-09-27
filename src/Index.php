@@ -201,6 +201,11 @@ class Index extends Base
 		}
 		
 		foreach($headers as $name => $value) {
+			if(!$value) {
+				header($name);
+				continue;
+			}
+			
 			header($name.':'.$value);
 		}
 		
