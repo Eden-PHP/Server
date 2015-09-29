@@ -386,7 +386,7 @@ class Index extends Base
 	 *
 	 * @return Eden\Registry\Index
 	 */
-	protected function getRequest() 
+	public function getRequest() 
 	{
 		$path = $_SERVER['REQUEST_URI'];
     
@@ -419,7 +419,7 @@ class Index extends Base
 	 *
 	 * @return Eden\Registry\Index
 	 */
-	protected function getResponse() 
+	public function getResponse() 
 	{
 		return $this('registry')
 			->set(
