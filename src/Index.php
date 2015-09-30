@@ -35,6 +35,20 @@ class Index extends Base
 	protected $parentServer = null;
 	
 	/**
+	 * Add the redirect method, we do 
+	 * it here for testing's sake
+	 *
+	 * @return void
+	 */
+	public function __construct()
+	{
+		$this->addMethod('redirect', function($path) {
+			header('Location: '.$path);
+			exit;
+		});
+	}
+	
+	/**
 	 * We might as well...
 	 *
 	 * @return string
@@ -153,6 +167,54 @@ class Index extends Base
 			->test(2, 'callable');
 		
 		return $this->route('get', $path, $callback);
+	}
+	
+	/**
+	 * Returns a request object
+	 *
+	 * @return Eden\Registry\Index
+	 */
+	public function getRequest() 
+	{
+		$path = $_SERVER['REQUEST_URI'];
+    
+		//remove ? url queries
+		if(strpos($path, '?') !== false) {
+			list($path, $tmp) = explode('?', $path, 2);
+		}
+
+		$array = explode('/',  $path);
+		
+		$path = array(
+			'string' => $path,
+			'array' => $array);
+			
+		//set the request
+		return $this('registry')
+			->set('method', $_SERVER['REQUEST_METHOD'])
+			->set('query', $_SERVER['QUERY_STRING'])
+			->set('body', file_get_contents('php://input'))
+			->set('server', $_SERVER)
+			->set('cookie', $_COOKIE)
+			->set('get', $_GET)
+			->set('post', $_POST)
+			->set('files', $_FILES)
+			->set('path', $path);
+	}
+	
+	/**
+	 * Returns a response object
+	 *
+	 * @return Eden\Registry\Index
+	 */
+	public function getResponse() 
+	{
+		return $this('registry')
+			->set(
+				'headers', 
+				'Content-Type', 
+				'text/html; charset=utf-8')
+			->set('headers', 'Status', '200 OK');;
 	}
 	
 	/**
@@ -302,18 +364,6 @@ class Index extends Base
 	}
 	
 	/**
-	 * Browser Redirect
-	 *
-	 * @param path
-	 * @return void
-	 */
-	public function redirect($path) 
-	{
-		header('Location: '.$path);
-		exit;
-	}
-	
-	/**
 	 * Process and output
 	 *
 	 * @return this
@@ -379,54 +429,6 @@ class Index extends Base
 	public function success() 
 	{
 		return $this->successful;
-	}
-	
-	/**
-	 * Returns a request object
-	 *
-	 * @return Eden\Registry\Index
-	 */
-	public function getRequest() 
-	{
-		$path = $_SERVER['REQUEST_URI'];
-    
-		//remove ? url queries
-		if(strpos($path, '?') !== false) {
-			list($path, $tmp) = explode('?', $path, 2);
-		}
-
-		$array = explode('/',  $path);
-		
-		$path = array(
-			'string' => $path,
-			'array' => $array);
-			
-		//set the request
-		return $this('registry')
-			->set('method', $_SERVER['REQUEST_METHOD'])
-			->set('query', $_SERVER['QUERY_STRING'])
-			->set('body', file_get_contents('php://input'))
-			->set('server', $_SERVER)
-			->set('cookie', $_COOKIE)
-			->set('get', $_GET)
-			->set('post', $_POST)
-			->set('files', $_FILES)
-			->set('path', $path);
-	}
-	
-	/**
-	 * Returns a response object
-	 *
-	 * @return Eden\Registry\Index
-	 */
-	public function getResponse() 
-	{
-		return $this('registry')
-			->set(
-				'headers', 
-				'Content-Type', 
-				'text/html; charset=utf-8')
-			->set('headers', 'Status', '200 OK');;
 	}
 	
 	/**
