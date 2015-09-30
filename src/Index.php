@@ -35,20 +35,6 @@ class Index extends Base
 	protected $parentServer = null;
 	
 	/**
-	 * Add the redirect method, we do 
-	 * it here for testing's sake
-	 *
-	 * @return void
-	 */
-	public function __construct()
-	{
-		$this->addMethod('redirect', function($path) {
-			header('Location: '.$path);
-			exit;
-		});
-	}
-	
-	/**
 	 * We might as well...
 	 *
 	 * @return string
@@ -361,6 +347,27 @@ class Index extends Base
 			->test(2, 'callable');
 		
 		return $this->route('put', $path, $callback);
+	}
+	
+	/**
+	 * Browser redirect
+	 *
+	 * @param string
+	 * @return mixed
+	 */
+	public function redirect($path) 
+	{
+		$check = new \StdClass();
+		$check->stop = false;
+		
+		$this->trigger('redirect', $path, $check);
+		
+		if(!$check->stop) {
+			header('Location: '.$path);
+			exit;
+		}
+		
+		return $this;
 	}
 	
 	/**
