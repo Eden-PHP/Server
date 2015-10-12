@@ -1,9 +1,9 @@
 <?php //-->
-/*
- * This file is part of the System package of the Eden PHP Library.
- * (c) 2013-2014 Openovate Labs
+/**
+ * This file is part of the Eden package.
+ * (c) 2014-2016 Openovate Labs
  *
- * Copyright and license information can be found at LICENSE
+ * Copyright and license information can be found at LICENSE.txt
  * distributed with this package.
  */
 
@@ -17,9 +17,10 @@ namespace Eden\Server;
  * outputs a trace (can be turned off) that shows where the problem
  * started to where the program stopped.
  *
- * @vendor Eden
- * @package session
- * @author Christian Blanquera cblanquera@openovate.com
+ * @vendor   Eden
+ * @package  session
+ * @author   Christian Blanquera <cblanquera@openovate.com>
+ * @standard PSR-2
  */
 class Index extends Base
 {
@@ -53,6 +54,7 @@ class Index extends Base
      * Adds global middleware
      *
      * @param callable
+     *
      * @return this
      */
     public function add($callback)
@@ -69,6 +71,7 @@ class Index extends Base
      *
      * @param string
      * @param callable
+     *
      * @return this
      */
     public function all($path, $callback)
@@ -111,6 +114,7 @@ class Index extends Base
      *
      * @param string
      * @param callable
+     *
      * @return this
      */
     public function delete($path, $callback)
@@ -128,6 +132,7 @@ class Index extends Base
      * Adds error middleware
      *
      * @param callable
+     *
      * @return this
      */
     public function error($callback)
@@ -143,6 +148,7 @@ class Index extends Base
      *
      * @param string
      * @param callable
+     *
      * @return this
      */
     public function get($path, $callback)
@@ -223,6 +229,7 @@ class Index extends Base
      * output it
      *
      * @param Eden\Registry\Index
+     *
      * @return this
      */
     public function output($response)
@@ -272,6 +279,7 @@ class Index extends Base
      *
      * @param string
      * @param callable
+     *
      * @return this
      */
     public function post($path, $callback)
@@ -339,6 +347,7 @@ class Index extends Base
      *
      * @param string
      * @param callable
+     *
      * @return this
      */
     public function put($path, $callback)
@@ -356,6 +365,7 @@ class Index extends Base
      * Browser redirect
      *
      * @param string
+     *
      * @return mixed
      */
     public function redirect($path)
@@ -390,6 +400,7 @@ class Index extends Base
      * @param string
      * @param string
      * @param callable
+     *
      * @return this
      */
     public function route($method, $path, $callback)
@@ -475,6 +486,7 @@ class Index extends Base
      *
      * @param Eden\Registry\Index
      * @param Eden\Registry\Index
+     *
      * @return bool
      */
     protected function handleErrors($request, $response)
@@ -530,6 +542,7 @@ class Index extends Base
      *
      * @param Eden\Registry\Index
      * @param Eden\Registry\Index
+     *
      * @return bool
      */
     protected function processGlobal($request, $response)
@@ -552,6 +565,7 @@ class Index extends Base
      *
      * @param Eden\Registry\Index
      * @param Eden\Registry\Index
+     *
      * @return bool
      */
     protected function processRoutes($request, $response)
