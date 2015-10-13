@@ -1,6 +1,6 @@
 <?php //-->
 /**
- * This file is part of the Eden package.
+ * This file is part of the Eden PHP Library.
  * (c) 2014-2016 Openovate Labs
  *
  * Copyright and license information can be found at LICENSE.txt
@@ -10,29 +10,58 @@
 namespace Eden\Server;
 
 /**
- * The base class for any class handling exceptions. Exceptions
- * allow an application to custom handle errors that would
- * normally let the system handle. This exception allows you to
- * specify error levels and error types. Also using this exception
- * outputs a trace (can be turned off) that shows where the problem
- * started to where the program stopped.
+ * Express style server class implementation
  *
  * @vendor   Eden
- * @package  session
+ * @package  Server
  * @author   Christian Blanquera <cblanquera@openovate.com>
  * @standard PSR-2
  */
 class Index extends Base
 {
+    /**
+     * @const string BACK The back keyword for redirect
+     */
+    const BACK = '<back>';
+
+    /**
+     * @const string NOT_FOUND 404 Error template
+     */
     const NOT_FOUND = 'Not Found.';
+       
+    /**
+     * @const string UNEXPECTED_GLOBAL Error template
+     */
     const UNEXPECTED_GLOBAL = 'Unexpected end before routing. Please check global middlewares.';
+       
+    /**
+     * @const string RESPONSE_ERROR_TYPE Default Exception type
+     */
     const RESPONSE_ERROR_TYPE = 'RESPONSE';
-    
+       
+    /**
+     * @var array $globalMiddleware A list of global middleware callbacks
+     */
     protected $globalMiddleware = array();
+       
+    /**
+     * @var array $routeMiddleware A list of route middleware callbacks
+     */
     protected $routeMiddleware = array();
+       
+    /**
+     * @var array $errorMiddleware A list of error middleware callbacks
+     */
     protected $errorMiddleware = array();
-    
+       
+    /**
+     * @var bool $successful If we were able to process all middleware
+     */
     protected $successful = false;
+       
+    /**
+     * @var Eden\Server\Index $parentServer Allows for parent/child
+     */
     protected $parentServer = null;
     
     /**
@@ -53,9 +82,9 @@ class Index extends Base
     /**
      * Adds global middleware
      *
-     * @param callable
+     * @param function $callback The middleware handler
      *
-     * @return this
+     * @return Eden\Server\Index
      */
     public function add($callback)
     {
@@ -69,10 +98,10 @@ class Index extends Base
     /**
      * Adds routing middleware for all methods
      *
-     * @param string
-     * @param callable
+     * @param string   $path     The route path
+     * @param function $callback The middleware handler
      *
-     * @return this
+     * @return Eden\Server\Index
      */
     public function all($path, $callback)
     {
@@ -112,10 +141,10 @@ class Index extends Base
     /**
      * Adds routing middleware for delete method
      *
-     * @param string
-     * @param callable
+     * @param string   $path     The route path
+     * @param function $callback The middleware handler
      *
-     * @return this
+     * @return Eden\Server\Index
      */
     public function delete($path, $callback)
     {
@@ -131,9 +160,9 @@ class Index extends Base
     /**
      * Adds error middleware
      *
-     * @param callable
+     * @param function $callback The middleware handler
      *
-     * @return this
+     * @return Eden\Server\Index
      */
     public function error($callback)
     {
@@ -146,10 +175,10 @@ class Index extends Base
     /**
      * Adds routing middleware for get method
      *
-     * @param string
-     * @param callable
+     * @param string   $path     The route path
+     * @param function $callback The middleware handler
      *
-     * @return this
+     * @return Eden\Server\Index
      */
     public function get($path, $callback)
     {
@@ -228,9 +257,9 @@ class Index extends Base
      * output. Then of course,
      * output it
      *
-     * @param Eden\Registry\Index
+     * @param Eden\Registry\Index $response The response object to evaluate
      *
-     * @return this
+     * @return Eden\Server\Index
      */
     public function output($response)
     {
@@ -277,10 +306,10 @@ class Index extends Base
     /**
      * Adds routing middleware for post method
      *
-     * @param string
-     * @param callable
+     * @param string   $path     The route path
+     * @param function $callback The middleware handler
      *
-     * @return this
+     * @return Eden\Server\Index
      */
     public function post($path, $callback)
     {
@@ -345,10 +374,10 @@ class Index extends Base
     /**
      * Adds routing middleware for put method
      *
-     * @param string
-     * @param callable
+     * @param string   $path     The route path
+     * @param function $callback The middleware handler
      *
-     * @return this
+     * @return Eden\Server\Index
      */
     public function put($path, $callback)
     {
@@ -364,12 +393,19 @@ class Index extends Base
     /**
      * Browser redirect
      *
-     * @param string
+     * @param string $path Where to redirect to
      *
      * @return mixed
      */
     public function redirect($path)
     {
+        if ($path === self::BACK) {
+            $path = 'javascript://history.go(-1)';
+            if (isset($_SERVER['HTTP_REFERER'])) {
+                $path = $_SERVER['HTTP_REFERER'];
+            }
+        }
+
         $check = new \StdClass();
         $check->stop = false;
         
@@ -386,7 +422,7 @@ class Index extends Base
     /**
      * Process and output
      *
-     * @return this
+     * @return Eden\Server\Index
      */
     public function render()
     {
@@ -397,11 +433,11 @@ class Index extends Base
     /**
      * Adds routing middleware
      *
-     * @param string
-     * @param string
-     * @param callable
+     * @param string   $method   The request method
+     * @param string   $path     The route path
+     * @param function $callback The middleware handler
      *
-     * @return this
+     * @return Eden\Server\Index
      */
     public function route($method, $path, $callback)
     {
@@ -432,7 +468,9 @@ class Index extends Base
      * Returns if we were able to output
      * something
      *
-     * @return bool
+     * @param Eden\Server\Index $parent The parent server
+     *
+     * @return Eden\Server\Index
      */
     public function setParent(Index $parent)
     {
@@ -455,6 +493,8 @@ class Index extends Base
     /**
      * Returns a dynamic list of variables
      * based on the given pattern and path
+     *
+     * @param array $matches Matches usually from a preg method
      *
      * @return array
      */
@@ -484,10 +524,10 @@ class Index extends Base
     /**
      * Listen and handle errors
      *
-     * @param Eden\Registry\Index
-     * @param Eden\Registry\Index
+     * @param Eden\Registry\Index $request  The request object
+     * @param Eden\Registry\Index $response The response object
      *
-     * @return bool
+     * @return void|Eden\Server\Index
      */
     protected function handleErrors($request, $response)
     {
@@ -540,8 +580,8 @@ class Index extends Base
     /**
      * Process global middleware
      *
-     * @param Eden\Registry\Index
-     * @param Eden\Registry\Index
+     * @param Eden\Registry\Index $request  The request object
+     * @param Eden\Registry\Index $response The response object
      *
      * @return bool
      */
@@ -563,8 +603,8 @@ class Index extends Base
     /**
      * Process route middleware
      *
-     * @param Eden\Registry\Index
-     * @param Eden\Registry\Index
+     * @param Eden\Registry\Index $request  The request object
+     * @param Eden\Registry\Index $response The response object
      *
      * @return bool
      */
