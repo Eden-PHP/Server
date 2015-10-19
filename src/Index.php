@@ -295,7 +295,9 @@ class Index extends Base
             
             header($name.':'.$value);
         }
-        
+
+        $this->trigger('server-output', $response, $body);
+
         echo (string) $body;
         
         $this->successful = true;
