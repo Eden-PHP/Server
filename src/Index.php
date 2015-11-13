@@ -295,10 +295,16 @@ class Index extends Base
             
             header($name.':'.$value);
         }
+
+        $check = new \StdClass();
+        $check->stop = false;
+
+        $this->trigger('server-output', $response, $body, $check);
         
-        echo (string) $body;
-        
-        $this->successful = true;
+        if (!$check->stop) {
+            echo (string) $body;
+            $this->successful = true;
+        }
         
         return $this;
     }
@@ -332,6 +338,11 @@ class Index extends Base
         //formulate the request and response
         $request = $this->getRequest();
         $response = $this->getResponse();
+        
+        //register shutdown
+        register_shutdown_function(function ($server) {
+            $server->trigger('server-end');
+        }, $this);
         
         //if it's not a child
         if (!($this->parentServer instanceof Index)) {
@@ -412,7 +423,10 @@ class Index extends Base
         $this->trigger('redirect', $path, $check);
         
         if (!$check->stop) {
-            header('Location: '.$path);
+            header('Location: ' . $path);
+            
+            //to many unknowns happen when redirecting while
+            //executing... it's best to exit now
             exit;
         }
         
